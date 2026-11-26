@@ -10,3 +10,4 @@ C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUI\obj\Debug\net9.0\GLUI.dll
 C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUI\obj\Debug\net9.0\refint\GLUI.dll
 C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUI\obj\Debug\net9.0\GLUI.pdb
 C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUI\obj\Debug\net9.0\ref\GLUI.dll
+C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUI\obj\Debug\net9.0\GLUI.sourcelink.json

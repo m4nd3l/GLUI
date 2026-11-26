@@ -1,6 +1,5 @@
 #version 330 core
 
-// Match the order and sizes in Renderer.cs.
 layout(location = 0) in vec2 aPosition;
 layout(location = 1) in vec2 aLocalUV;
 layout(location = 2) in vec2 aTextureUV;

@@ -5,30 +5,31 @@ using Silk.NET.Windowing;
 using System.Numerics;
 using GLUI.input;
 using GLUI.rendering;
-using GLUI.rendering.opengl;
+using GLUI.ui;
 using GLUI.ui.utils;
+using Texture = GLUI.rendering.opengl.Texture;
 
 namespace GLUI.window;
 
 public class GLWindow : IDisposable {
-	private static GraphicsAPI OpenGLGraphicsAPI = new(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible, new APIVersion(4, 6));
-	
-	private WindowOptions  options;
+	private static readonly GraphicsAPI OpenGLGraphicsAPI = new(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible, new APIVersion(4, 6));
+
 	private IWindow        window;
 	private IInputContext? input;
 	private InputMap?      inputMap;
 	private GL?            gl;
-	private Renderer?      renderer;
+	private GLUIRenderer?  renderer;
+	private UI?            ui;
 	private bool           running;
 	private bool           disposed;
 	
-	private event Action?                loadEvent;
-	private event Action<double>?        updateEvent;
-	private event Action<double>?        renderEvent;
-	private event Action<bool>?          focusChangedEvent;
-	private event Action<Vector2D<int>>? resizeEvent ;
-	private event Action<Vector2D<int>>? bufferResizeEvent;
-	private event Action?                closingEvent;
+	private event Action?                    loadEvent;
+	private event Action<InputMap?, double>? updateEvent;
+	private event Action<double>?            renderEvent;
+	private event Action<bool>?              focusChangedEvent;
+	private event Action<Vector2D<int>>?     resizeEvent ;
+	private event Action<Vector2D<int>>?     bufferResizeEvent;
+	private event Action?                    closingEvent;
 
 	private event Action<IKeyboard, Key, int> keyDownEvent;
 	private event Action<IKeyboard, Key, int> keyUpEvent;
@@ -45,13 +46,12 @@ public class GLWindow : IDisposable {
 		: this(WindowOptions.Default with { Title = title, Size = new Vector2D<int>(width, height), Position = new Vector2D<int>(positionX, positionY), VSync = vSync, FramesPerSecond = fps, IsVisible = showNow, API = OpenGLGraphicsAPI }) { }
 
 	public GLWindow(WindowOptions options) {
-		this.options = options;
 		running = false;
 		
-		window = Window.Create(this.options);
+		window = Window.Create(options);
 		
 		window.Load              += load;
-		window.Update            += deltaTime  => updateEvent?.Invoke(deltaTime);
+		window.Update            += deltaTime  => updateEvent?.Invoke(inputMap, deltaTime);
 		window.Render            += deltaTime  => renderEvent?.Invoke(deltaTime);
 		window.FocusChanged      += focused     => focusChangedEvent?.Invoke(focused);
 		window.Resize            += size => resizeEvent?.Invoke(size);
@@ -70,7 +70,7 @@ public class GLWindow : IDisposable {
 		inputMap = new InputMap();
 		inputMap.attach(input);
 		
-		addUpdateEvent(inputMap.update);
+		window.Update += inputMap.update;
 
 		foreach (var toAdd in input.Keyboards) {
 			toAdd.KeyDown += (keyboard, key, keycode) => keyDownEvent?.Invoke(keyboard, key, keycode);
@@ -87,20 +87,11 @@ public class GLWindow : IDisposable {
 			toAdd.Scroll      += (mouse, scroll)                   => scrollEvent?.Invoke(mouse, scroll);
 		}
 		
-		renderer = new Renderer(gl);
+		renderer = new GLUIRenderer(gl);
 		renderer.updateProjection(window.Size.X, window.Size.Y);
-		renderer.beginBatch();
-		renderer.drawQuad(
-			100f, 100f,
-			500f, 200f,
-			Color.white,
-			Color.yellow,
-			-1,
-			7f,
-			30,
-			25f
-		);
-		renderer.endBatch();
+
+		ui = new UI(renderer);
+		ui.resize(window.Size.X, window.Size.Y);
 		
 		loadEvent?.Invoke();
 	}
@@ -127,6 +118,7 @@ public class GLWindow : IDisposable {
 	private void bufferResize(Vector2D<int> size) {
 		gl?.Viewport(size);
 		renderer?.updateProjection(size.X, size.Y);
+		ui?.resize(size.X, size.Y);
 	}
 	
 	public void run() {
@@ -161,7 +153,7 @@ public class GLWindow : IDisposable {
 	public void addMouseMoveEvent(Action<IMouse, Vector2> handler)                => mouseMoveEvent += handler;
 	public void addScrollEvent(Action<IMouse, ScrollWheel> handler)               => scrollEvent += handler;
 	public void addLoadEvent(Action handler)                                      => loadEvent += handler;
-	public void addUpdateEvent(Action<double> handler)                            => updateEvent += handler;
+	public void addUpdateEvent(Action<InputMap?, double> handler)                 => updateEvent += handler;
 	public void addRenderEvent(Action<double> handler)                            => renderEvent += handler;
 	public void addFocusChangedEvent(Action<bool> handler)                        => focusChangedEvent += handler;
 	public void addResizeEvent(Action<Vector2D<int>> handler)                     => resizeEvent += handler;
@@ -178,7 +170,7 @@ public class GLWindow : IDisposable {
 	public void removeMouseMoveEvent(Action<IMouse, Vector2> handler)                => mouseMoveEvent -= handler;
 	public void removeScrollEvent(Action<IMouse, ScrollWheel> handler)               => scrollEvent -= handler;
 	public void removeLoadEvent(Action handler)                                      => loadEvent -= handler;
-	public void removeUpdateEvent(Action<double> handler)                            => updateEvent -= handler;
+	public void removeUpdateEvent(Action<InputMap?, double> handler)                 => updateEvent -= handler;
 	public void removeRenderEvent(Action<double> handler)                            => renderEvent -= handler;
 	public void removeFocusChangedEvent(Action<bool> handler)                        => focusChangedEvent -= handler;
 	public void removeResizeEvent(Action<Vector2D<int>> handler)                     => resizeEvent -= handler;

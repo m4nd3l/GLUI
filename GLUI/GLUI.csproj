@@ -15,11 +15,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="resources\**\*" />
       <PackageReference Include="Silk.NET.Input" Version="2.23.0" />
       <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0" />
       <PackageReference Include="Silk.NET.Windowing" Version="2.23.0" />
-      <EmbeddedResource Include="resources\shaders\*.vert" />
-      <EmbeddedResource Include="resources\shaders\*.frag" />
       <PackageReference Include="StbImageSharp" Version="2.30.16" />
     </ItemGroup>
 

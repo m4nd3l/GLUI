@@ -35,3 +35,4 @@ C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUITest\obj\Debug\net9.0\refi
 C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUITest\obj\Debug\net9.0\GLUITest.pdb
 C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUITest\obj\Debug\net9.0\GLUITest.genruntimeconfig.cache
 C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUITest\obj\Debug\net9.0\ref\GLUITest.dll
+C:\Users\m4nd3l\Documents\Dati\Coding\CSharp\GLUI\GLUITest\obj\Debug\net9.0\GLUITest.sourcelink.json

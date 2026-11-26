@@ -16,7 +16,7 @@ out vec4 fragColor;
 // fShapeArgs = [type, border/line/ring thickness px, progress% (or line length px), radius%]
 uniform sampler2D uTextures[16];
 
-const float PI = 3.14159265358979323846;
+const float PI     = 3.14159265358979323846;
 const float TWO_PI = 6.28318530717958647692;
 
 // Explicit constant sampler indices are compatible with GLSL 330.
