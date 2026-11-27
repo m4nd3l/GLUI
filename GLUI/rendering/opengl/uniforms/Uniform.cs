@@ -3,13 +3,13 @@
 namespace GLUI.rendering.opengl.uniforms;
 
 public abstract unsafe class Uniform {
-	private GL glInstance;
-	private uint shaderProgram;
-	private int location;
-	private void* value;
+	internal GL gl { get; }
+	internal int location { get; private set; }
+	internal void* value { get; }
+	private uint shaderProgram { get; }
 
-	protected Uniform(GL gl, string name, uint shaderProgram, void* value) {
-		glInstance = gl;
+	internal Uniform(GL gl, string name, uint shaderProgram, void* value) {
+		this.gl = gl;
 		this.shaderProgram = shaderProgram;
 		this.value = value;
 		setLocation(name);
@@ -17,13 +17,8 @@ public abstract unsafe class Uniform {
 
 	public abstract void upload();
 
-	protected GL gl() => glInstance;
-	protected int getLocation() => location;
-	protected void* getValue() => value;
-	protected void setValue(void* obj) => value = obj;
-
 	private void setLocation(string name) {
-		location = gl().GetUniformLocation(shaderProgram, name);
+		location = gl.GetUniformLocation(shaderProgram, name);
 		if (location is -1) throw new ArgumentException($"Uniform {name} not found");
 	}
 }

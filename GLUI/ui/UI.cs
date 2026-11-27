@@ -1,56 +1,94 @@
 ﻿using GLUI.input;
 using GLUI.rendering;
-using System.Runtime.InteropServices;
+using GLUI.ui.utils;
 
 namespace GLUI.ui;
 
-public unsafe class UI : IDisposable {
-	private GLUIRenderer renderer;
-	private List<GLUIFrame> frames;
-	private bool* dirty;
+public class UI : IDisposable {
+    public IReadOnlyList<GLUIFrame> framesList => frames.AsReadOnly();
+    private GLUIRenderer renderer { get; }
+    private List<GLUIFrame> frames { get; }  = [];
+    private UIState state { get; }  = new();
+    private bool disposed { get; set; }
+    private bool hasSize { get; set; }
+    private int width { get; set; }
+    private int height { get; set; }
 
-	public UI(GLUIRenderer renderer, params GLUIFrame[] toAdd) {
-		this.renderer = renderer;
-		frames = new List<GLUIFrame>(toAdd);
-		dirty = (bool*) NativeMemory.Alloc(sizeof(bool));
-		*dirty = false;
-	}
-
-	public void update(InputMap? input, double delta) {
-		var mouseCaptured = false;
-		for (int i = frames.Count - 1; i >= 0; i--)
-			if (frames[i].update(input, delta, mouseCaptured, dirty)) mouseCaptured = true;
-		
-		if (*dirty) push();
-		*dirty = false;
-	}
-	
-	public void removeFrame(GLUIFrame frame) { frame.Dispose(); frames.Remove(frame); sort(); }
-	public void addFrame(params List<GLUIFrame> toAdd) { frames.AddRange(toAdd); sort(); }
-	
-	public void resize(int width, int height) {
-		if (frames.Count is 0) return;
-		foreach (var frame in frames)
-			frame.resize(width, height);
-	}
-	
-	public void Dispose() {
-		frames.ForEach(frame => frame.Dispose());
-		frames.Clear();
-		NativeMemory.Free(dirty);
-	}
-
-	private void push() => frames.ForEach(frame => frame.push(renderer));
-	private void sort() => frames.Sort(new FrameComparer());
-	
-	private class FrameComparer : IComparer<GLUIFrame> {
-		public int Compare(GLUIFrame? x, GLUIFrame? y) {
-			if (x is null && y is null) return 0;
-			if (x is null) return -1;
-			if (y is null) return 1;
-			if (x.z().Equals(y.z())) return 0;
-			if (x.z() < y.z()) return -1;
-			return 1;
-		}
-	}
+    public UI(GLUIRenderer renderer, params GLUIFrame[] toAdd) {
+        this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+        addFrame(toAdd);
+    }
+    
+    public void addFrame(List<GLUIFrame> toAdd) => addFrame(toAdd.ToArray());
+    public void addFrame(params GLUIFrame[] toAdd) {
+        ObjectDisposedException.ThrowIf(disposed, typeof(UI));
+        foreach (GLUIFrame frame in toAdd) {
+            if (frame.owner != null) throw new InvalidOperationException("Frame is already attached.");
+            frame.attach(this);
+            frames.Add(frame);
+        }
+        
+        invalidateLayout();
+    }
+    public void removeFrame(GLUIFrame frame) {
+        if (!frames.Remove(frame)) return;
+        frame.attach(null);
+        
+        invalidateLayout();
+    }
+    
+    public void invalidate() => state.dirty(true);
+    public void invalidateLayout() => state.invalidateLayout();
+    
+    public void resize(int newWidth, int newHeight) {
+        ObjectDisposedException.ThrowIf(disposed, typeof(UI));
+        if (newWidth <= 0 || newHeight <= 0) return;
+        renderer.updateProjection(newWidth, newHeight);
+        width = newWidth;
+        height = newHeight;
+        hasSize = true;
+        invalidateLayout();
+        ensureLayout();
+    }
+    
+    public void update(InputMap? input, double delta) {
+        ObjectDisposedException.ThrowIf(disposed, typeof(UI));
+        if (!hasSize) return;
+        
+        ensureLayout();
+        bool captured = false;
+        var ordered = frames.OrderBy(frame => frame.zIndex).ToArray();
+        
+        for (int i = ordered.Length - 1; i >= 0; i--)
+            if (ordered[i].owner == this) captured |= ordered[i].update(input, delta, captured);
+        
+        ensureLayout();
+        if (!state.isDirty) return;
+        state.dirty(false);
+        
+        try {
+            renderer.beginBatch();
+            foreach (GLUIFrame frame in frames.OrderBy(frame => frame.zIndex).ToArray())
+                if (frame.owner == this) frame.push(renderer);
+            renderer.endBatch();
+        } catch {
+            state.dirty(true);
+            throw;
+        }
+    }
+    
+    private void ensureLayout() {
+        if (!state.isLayoutDirty || !hasSize) return;
+        state.validateLayout();
+        foreach (GLUIFrame frame in frames.ToArray())
+            frame.resize(width, height);
+    }
+        
+    public void Dispose() {
+        if (disposed) return;
+        disposed = true;
+        foreach (var frame in frames.ToArray()) frame.Dispose();
+        frames.Clear();
+        GC.SuppressFinalize(this);
+    }
 }

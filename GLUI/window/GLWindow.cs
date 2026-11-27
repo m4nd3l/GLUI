@@ -14,14 +14,14 @@ namespace GLUI.window;
 public class GLWindow : IDisposable {
 	private static readonly GraphicsAPI OpenGLGraphicsAPI = new(ContextAPI.OpenGL, ContextProfile.Core, ContextFlags.ForwardCompatible, new APIVersion(4, 6));
 
-	private IWindow        window;
-	private IInputContext? input;
-	private InputMap?      inputMap;
-	private GL?            gl;
-	private GLUIRenderer?  renderer;
-	private UI?            ui;
-	private bool           running;
-	private bool           disposed;
+	private IWindow        window   { get; }
+	private IInputContext? input    { get; set; }
+	private InputMap?      inputMap { get; set; }
+	private GL?            gl       { get; set; }
+	private GLUIRenderer?  renderer { get; set; }
+	private UI?            ui       { get; set; }
+	private bool           running  { get; set; }
+	private bool           disposed { get; set; }
 	
 	private event Action?                    loadEvent;
 	private event Action<InputMap?, double>? updateEvent;

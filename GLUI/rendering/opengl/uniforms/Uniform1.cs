@@ -7,9 +7,9 @@ public unsafe class Uniform1 : Uniform {
 
 	public override void upload() {
 		int current;
-		try { current = *(int*) getValue(); }
+		try { current = *(int*) value; }
 		catch { throw new MissingFieldException("void* value in Matrix4Uniform is not pointing to int structure"); }
 		
-		gl().Uniform1(getLocation(), current);
+		gl.Uniform1(location, current);
 	}
 }

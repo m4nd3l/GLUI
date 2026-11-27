@@ -4,11 +4,10 @@ using System.Reflection;
 namespace GLUI.rendering.opengl;
 
 public abstract class RenderObject : IDisposable {
-	private readonly GL glInstance;
-	private bool disposed;
+	internal GL gl { get; }
+	private bool disposed { get; set; }
 
-	protected RenderObject(GL glInstance) => this.glInstance = glInstance;
-	protected GL gl() => glInstance;
+	protected RenderObject(GL gl) => this.gl = gl;
 
 	protected (bool success, string error) readFile(string path, out byte[] content) {
 		content = Array.Empty<byte>();

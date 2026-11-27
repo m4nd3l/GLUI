@@ -1,18 +1,31 @@
-﻿namespace GLUI.ui.utils;
+﻿using System;
+
+namespace GLUI.ui.utils;
 
 public class Margin {
-	private float leftMargin;
-	private float topMargin;
+	public event Action? Changed;
+	public float leftMargin {
+		get => leftMarginReference;
+		set {
+			if (leftMarginReference.Equals(value)) return;
+			leftMarginReference = value;
+			Changed?.Invoke();
+		}
+	}
+	public float topMargin {
+		get => topMarginReference;
+		set {
+			if (topMarginReference.Equals(value)) return;
+			topMarginReference = value;
+			Changed?.Invoke();
+		}
+	}
+	private float leftMarginReference;
+	private float topMarginReference;
 	
 	public Margin(float all) : this(all, all) {  }
 	public Margin(float left = 0.0f, float top = 0.0f) {
-		this.leftMargin = left;
-		this.topMargin = top;
+		leftMargin = left;
+		topMargin = top;
 	}
-
-	public float getLeftMargin() => leftMargin;
-	public float getTopMargin() => topMargin;
-
-	public void setLeftMargin(float newLeftMargin) => leftMargin = newLeftMargin;
-	public void setTopMargin(float newTopMargin) => topMargin = newTopMargin; 
 }

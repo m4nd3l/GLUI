@@ -8,7 +8,7 @@ public unsafe class Matrix4fUniform : Uniform {
 
 	public override void upload() {
 		Matrix4X4<float> current;
-		try { current = *(Matrix4X4<float>*) getValue(); }
+		try { current = *(Matrix4X4<float>*) value; }
 		catch { throw new MissingFieldException("void* value in Matrix4Uniform is not pointing to Matrix4X4<float> structure"); }
 		
 		float* data = stackalloc float[16] {
@@ -17,6 +17,6 @@ public unsafe class Matrix4fUniform : Uniform {
 			current.M31, current.M32, current.M33, current.M34,
 			current.M41, current.M42, current.M43, current.M44
 		};
-		gl().UniformMatrix4(getLocation(), 1, false, data);
+		gl.UniformMatrix4(location, 1, false, data);
 	}
 }

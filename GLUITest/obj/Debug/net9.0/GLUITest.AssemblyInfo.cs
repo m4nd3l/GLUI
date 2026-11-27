@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GLUITest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ce25ce2dfcf86b9e71b9a64dcbfa739b94c0a2c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f69f1851f21fc001ca711b3014aa75a8eee9ef0a")]
 [assembly: System.Reflection.AssemblyProductAttribute("GLUITest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GLUITest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

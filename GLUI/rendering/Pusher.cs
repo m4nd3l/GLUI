@@ -4,7 +4,7 @@ using Texture = GLUI.rendering.opengl.Texture;
 
 namespace GLUI.rendering;
 
-public unsafe partial class GLUIRenderer {
+public partial class GLUIRenderer {
     private const float epsilon = 0.00001f;
     private static readonly Vector4 fullUV = new(0f, 0f, 1f, 1f);
 
@@ -60,8 +60,7 @@ public unsafe partial class GLUIRenderer {
             new Vector2(width, height), fill ?? Color.white, border ?? Color.transparent,
             slot, ShapeType.Ellipse, Math.Max(borderThickness, 0f), 100f, 0f, true, uvRect ?? fullUV);
     }
-
-    // Ring/arc start at 12 o'clock. progress is 0..100% of a revolution.
+    
     public void drawRing(float centerX, float centerY, float outerRadius, float thickness,
         Color? color = null, float progress = 100f, bool clockwise = true,
         Texture? texture = null, Vector4? uvRect = null) {
@@ -85,8 +84,7 @@ public unsafe partial class GLUIRenderer {
         float sweepPercent, Color? color = null, bool clockwise = true,
         Texture? texture = null, Vector4? uvRect = null) =>
         drawRing(centerX, centerY, radius, thickness, color, sweepPercent, clockwise, texture, uvRect);
-
-    // A line is a shader-antialiased capsule, so ends are rounded.
+    
     public void drawLine(Vector2 start, Vector2 end, float thickness = 2f,
         Color? color = null, Texture? texture = null, Vector4? uvRect = null) {
 
@@ -120,9 +118,6 @@ public unsafe partial class GLUIRenderer {
         Texture? texture = null, Vector4? uvRect = null) =>
         drawPolygon(new[] { a, b, c }, fill, border, borderThickness, texture, uvRect);
 
-    // Supports simple convex AND concave polygons (without holes).
-    // Fill is ear-clipped on the CPU. Border is drawn as antialiased capsules
-    // centered on each edge, so translucent borders may overlap at corners.
     public void drawPolygon(IReadOnlyList<Vector2> points,
         Color? fill = null, Color? border = null, float borderThickness = 0f,
         Texture? texture = null, Vector4? uvRect = null) {
@@ -162,10 +157,9 @@ public unsafe partial class GLUIRenderer {
             indices.Add(baseVertex + (uint)c);
         }
 
-        if (borderThickness > 0f && border is not null && border.a() > 0f) {
-            for (int i = 0; i < polygon.Count; i++)
-                drawLine(polygon[i], polygon[(i + 1) % polygon.Count], borderThickness, border);
-        }
+        if (!(borderThickness > 0f) || border is null || !(border.a > 0f)) return;
+        for (int i = 0; i < polygon.Count; i++)
+            drawLine(polygon[i], polygon[(i + 1) % polygon.Count], borderThickness, border);
     }
 
     public void drawRegularPolygon(float centerX, float centerY, float radius, int sides,
@@ -183,8 +177,7 @@ public unsafe partial class GLUIRenderer {
         }
         drawPolygon(points, fill, border, borderThickness, texture, uvRect);
     }
-
-    // Internal common geometry path. No GL calls occur here.
+    
     private void emitQuad(Vector2 topLeft, Vector2 topRight, Vector2 bottomRight, Vector2 bottomLeft,
         Vector2 size, Color fill, Color border, int slot, ShapeType type,
         float thickness, float progressOrLength, float radiusPercent, bool direction, Vector4 uvRect) {
@@ -209,10 +202,10 @@ public unsafe partial class GLUIRenderer {
         vertices.Add(localUV.X); vertices.Add(localUV.Y);
         vertices.Add(textureU); vertices.Add(textureV);
         vertices.Add(size.X); vertices.Add(size.Y);
-        vertices.Add(fill.r()); vertices.Add(fill.g()); vertices.Add(fill.b()); vertices.Add(fill.a());
-        vertices.Add(border.r()); vertices.Add(border.g()); vertices.Add(border.b()); vertices.Add(border.a());
+        vertices.Add(fill.r); vertices.Add(fill.g); vertices.Add(fill.b); vertices.Add(fill.a);
+        vertices.Add(border.r); vertices.Add(border.g); vertices.Add(border.b); vertices.Add(border.a);
         vertices.Add(BitConverter.Int32BitsToSingle(slot));
-        vertices.Add((float)type); vertices.Add(thickness); vertices.Add(progressOrLength); vertices.Add(radiusPercent);
+        vertices.Add((float) type); vertices.Add(thickness); vertices.Add(progressOrLength); vertices.Add(radiusPercent);
         vertices.Add(BitConverter.Int32BitsToSingle(direction ? 1 : 0));
     }
 
@@ -234,8 +227,7 @@ public unsafe partial class GLUIRenderer {
         }
         if (result.Count >= 2 && Vector2.DistanceSquared(result[0], result[^1]) <= epsilon * epsilon)
             result.RemoveAt(result.Count - 1);
-
-        // Remove redundant, collinear vertices (without changing the outline).
+        
         bool changed;
         do {
             changed = false;
@@ -277,12 +269,11 @@ public unsafe partial class GLUIRenderer {
                 bool containsVertex = false;
                 foreach (int vertex in remaining) {
                     if (vertex == prev || vertex == curr || vertex == next) continue;
-                    if (sign * cross(p[prev], p[curr], p[vertex]) >= -epsilon &&
-                        sign * cross(p[curr], p[next], p[vertex]) >= -epsilon &&
-                        sign * cross(p[next], p[prev], p[vertex]) >= -epsilon) {
-                        containsVertex = true;
-                        break;
-                    }
+                    if (!(sign * cross(p[prev], p[curr], p[vertex]) >= -epsilon) ||
+                        !(sign * cross(p[curr], p[next], p[vertex]) >= -epsilon) ||
+                        !(sign * cross(p[next], p[prev], p[vertex]) >= -epsilon)) continue;
+                    containsVertex = true;
+                    break;
                 }
                 if (containsVertex) continue;
                 output.Add((prev, curr, next));

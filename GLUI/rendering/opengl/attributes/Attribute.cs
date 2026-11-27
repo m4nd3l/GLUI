@@ -3,13 +3,13 @@
 namespace GLUI.rendering.opengl.attributes;
 
 public class Attribute {
-	private GL gl;
-	private VertexAttribPointerType dataType;
-	private bool normalized;
-	private int componentCount;
-	private uint bytesPerVertex;
+	internal GL gl { get;}
+	private VertexAttribPointerType dataType { get; }
+	private bool normalized { get; }
+	private int componentCount { get; }
+	private uint bytesPerVertex { get; }
 
-	public Attribute(GL gl, VertexAttribPointerType dataType, int componentCount = 1, bool normalized = false) {
+	protected Attribute(GL gl, VertexAttribPointerType dataType, int componentCount = 1, bool normalized = false) {
 		this.gl = gl;
 		this.dataType = dataType;
 		this.normalized = normalized;
@@ -31,13 +31,13 @@ public class Attribute {
 	
 	private uint calculateBytes() =>
 		dataType switch {
-			VertexAttribPointerType.Float => (uint)(4 * componentCount),
-			VertexAttribPointerType.UnsignedInt => (uint)(4 * componentCount),
-			VertexAttribPointerType.Int => (uint)(4 * componentCount),
-			VertexAttribPointerType.Short => (uint)(2 * componentCount),
-			VertexAttribPointerType.UnsignedShort => (uint)(2 * componentCount),
-			VertexAttribPointerType.Byte => (uint)(1 * componentCount),
-			VertexAttribPointerType.UnsignedByte => (uint)(1 * componentCount),
+			VertexAttribPointerType.Float                 => (uint) (4 * componentCount),
+			VertexAttribPointerType.UnsignedInt           => (uint) (4 * componentCount),
+			VertexAttribPointerType.Int                   => (uint) (4 * componentCount),
+			VertexAttribPointerType.Short                 => (uint) (2 * componentCount),
+			VertexAttribPointerType.UnsignedShort         => (uint) (2 * componentCount),
+			VertexAttribPointerType.Byte                  => (uint) (1 * componentCount),
+			VertexAttribPointerType.UnsignedByte          => (uint) (1 * componentCount),
 			VertexAttribPointerType.UnsignedInt2101010Rev => 4u,
 			_ => throw new ArgumentException("Unsupported data type for VAO attribute: " + dataType)
 		};

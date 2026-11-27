@@ -13,21 +13,21 @@ public unsafe partial class GLUIRenderer : IDisposable {
     
     private const int vertexWords = 22;
 
-    private readonly GL gl;
-    private readonly VAO vao;
-    private readonly VBO vbo;
-    private readonly EBO ebo;
-    private readonly ShaderProgram shader;
-    private Matrix4X4<float>* projection;
+    private GL gl { get; }
+    private VAO vao { get; }
+    private VBO vbo { get; }
+    private EBO ebo { get; }
+    private ShaderProgram shader { get; }
+    private Matrix4X4<float>* projection { get; set; }
 
-    private readonly List<float> vertices = [];
-    private readonly List<uint> indices = [];
-    private readonly List<TextureGroup> textureGroups = [];
-    private bool disposed;
+    private List<float> vertices { get; } = [];
+    private List<uint> indices { get; } = [];
+    private List<TextureGroup> textureGroups { get; } = [];
+    private bool disposed { get; set; }
     
     private sealed class TextureGroup(int startIndex) {
-        public readonly int firstIndex = startIndex;
-        public readonly List<Texture> textures = [];
+        public int firstIndex { get; } = startIndex;
+        public List<Texture> textures { get; } = [];
     }
 
     public GLUIRenderer(GL gl) {
@@ -61,9 +61,9 @@ public unsafe partial class GLUIRenderer : IDisposable {
         *projection = Matrix4X4<float>.Identity;
 
         shader.bind();
-        shader.add(new Matrix4fUniform(gl, "uProjection", shader.getProgram(), projection));
+        shader.add(new Matrix4fUniform(gl, "uProjection", shader.shaderProgram, projection));
         for (int i = 0; i < maxTextureSlots; i++) {
-            Uniform1 uniform = new Uniform1(gl, $"uTextures[{i}]", shader.getProgram(), &i);
+            Uniform1 uniform = new (gl, $"uTextures[{i}]", shader.shaderProgram, &i);
             shader.add(uniform);
             uniform.upload();
         }
@@ -162,11 +162,9 @@ public unsafe partial class GLUIRenderer : IDisposable {
         vao.unbind();
     }
 
-    private void throwIfDisposed() {
-        if (!disposed) return;
-
-        throw new ObjectDisposedException(nameof(GLUIRenderer));
-    }
+    private void throwIfDisposed() 
+        => ObjectDisposedException.ThrowIf(disposed, typeof(GLUIRenderer));
+    
 
     public void Dispose() {
         if (disposed) return;

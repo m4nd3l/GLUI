@@ -5,21 +5,21 @@ using Silk.NET.Maths;
 namespace GLUI.input;
 
 public class InputMap {
-	private readonly bool[] previousKeyStates = new bool[KeyIndexMap.totalUniqueKeys];
-	private readonly bool[] currentKeyStates = new bool[KeyIndexMap.totalUniqueKeys];
+	private bool[] previousKeyStates { get; } = new bool[KeyIndexMap.totalUniqueKeys];
+	private bool[] currentKeyStates { get; } = new bool[KeyIndexMap.totalUniqueKeys];
 
-	private readonly bool[] previousMouseButtonStates = new bool[MouseButtonIndexMap.totalUniqueButtons];
-	private readonly bool[] currentMouseButtonStates = new bool[MouseButtonIndexMap.totalUniqueButtons];
-	private readonly bool[] doubleClickedMouseButtonStates = new bool[MouseButtonIndexMap.totalUniqueButtons];
-	private readonly double[] lastMouseButtonClickTimes = new double[MouseButtonIndexMap.totalUniqueButtons];
-	private readonly Vector2D<float>[] lastMouseButtonClickPositions = new Vector2D<float>[MouseButtonIndexMap.totalUniqueButtons];
+	private bool[] previousMouseButtonStates { get; } = new bool[MouseButtonIndexMap.totalUniqueButtons];
+	private bool[] currentMouseButtonStates { get; } = new bool[MouseButtonIndexMap.totalUniqueButtons];
+	private bool[] doubleClickedMouseButtonStates { get; } = new bool[MouseButtonIndexMap.totalUniqueButtons];
+	private double[] lastMouseButtonClickTimes { get; } = new double[MouseButtonIndexMap.totalUniqueButtons];
+	private Vector2D<float>[] lastMouseButtonClickPositions { get; } = new Vector2D<float>[MouseButtonIndexMap.totalUniqueButtons];
 
 	private Vector2D<float> previousMousePosition;
 	private Vector2D<float> currentMousePosition;
 	private Vector2D<float> scrollDelta;
 	private double elapsedTime;
 
-	private IInputContext? inputContext;
+	private IInputContext? inputContext { get; set; }
 
 	private double doubleClickIntervalSeconds { get; set; } = 0.30;
 	private float doubleClickMaxDistance { get; set; } = 6.0f;

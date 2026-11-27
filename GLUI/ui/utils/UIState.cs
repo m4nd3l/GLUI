@@ -1,9 +1,9 @@
 ﻿namespace GLUI.ui.utils;
 
-public class UIState {
-	private bool isDirty;
-
-	public UIState() => dirty(true);
-	
+public sealed class UIState {
+	public bool isDirty { get; private set; } = true;
+	public bool isLayoutDirty { get; private set; } = true;
 	public void dirty(bool makeDirty) => isDirty = makeDirty;
+	public void invalidateLayout() { isLayoutDirty = true; isDirty = true; }
+	internal void validateLayout() => isLayoutDirty = false;
 }

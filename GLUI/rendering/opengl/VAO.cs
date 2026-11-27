@@ -4,18 +4,15 @@ using Attribute = GLUI.rendering.opengl.attributes.Attribute;
 namespace GLUI.rendering.opengl;
 
 public class VAO : RenderObject {
-	private uint vao;
-	private List<Attribute> attributes;
+	private uint vao { get; }
+	private List<Attribute> attributes { get; } = [];
 
-	public VAO(GL glInstance) : base(glInstance) {
-		vao = gl().GenVertexArray();
-		attributes = new();
-	}
+	public VAO(GL gl) : base(gl) => vao = gl.GenVertexArray();
 
 	public void addAttributes(params Attribute[] newAttributes) {
 		bind();
 
-		foreach (var attribute in newAttributes)
+		foreach (Attribute attribute in newAttributes)
 			attributes.Add(attribute);
 
 		uint stride = getVertexSize();
@@ -29,19 +26,14 @@ public class VAO : RenderObject {
 		}
 	}
 
-	public uint getVertexComponents() {
-		int vertexComponents = 0;
-		foreach (Attribute attribute in attributes) vertexComponents += attribute.getComponentCount();
-		return (uint) vertexComponents;
-	}
+	public uint getVertexComponents()
+		=> (uint) attributes.Sum(attribute => attribute.getComponentCount());
 	
-	private uint getVertexSize() {
-		uint size = 0;
-		foreach (var attribute in attributes) size += attribute.getSize();
-		return size;
-	}
+	private uint getVertexSize() 
+		=> attributes.Aggregate<Attribute?, uint>(0, (current, attribute) => current + (attribute?.getSize() ?? 0));
+	
 
-	public sealed override void bind() => gl().BindVertexArray(vao);
-	public sealed override void unbind() => gl().BindVertexArray(0);
-	public sealed override void disposeImplementation() { unbind(); gl().DeleteVertexArray(vao); }
+	public sealed override void bind() => gl.BindVertexArray(vao);
+	public sealed override void unbind() => gl.BindVertexArray(0);
+	public sealed override void disposeImplementation() { unbind(); gl.DeleteVertexArray(vao); }
 }
